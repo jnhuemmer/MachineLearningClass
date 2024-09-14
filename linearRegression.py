@@ -50,7 +50,7 @@ class ThetaNumerical:
         return self.thetaValue
 
     # Using the dimensionality of the input data, this method creates the proper amount of theta variables and assigns them a random value
-    def initializeThetaNumericalNumerical():
+    def initializeThetaNumerical():
         tempList = []
         for x in range(len(ThetaNumerical.inputDataPoints) + 1):
             tempList.append(ThetaNumerical(random.randrange(1, 5, 1), x))
