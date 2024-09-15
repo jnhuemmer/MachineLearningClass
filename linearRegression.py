@@ -3,6 +3,8 @@ import random
 
 print("Hello world!")
 
+# Class handles static data set and creates a list of theta objects corresponding to it
+# This class is capable of performing a multiple linear regression
 class ThetaNumerical:
 
     ################################################## Static Vars and Methods
@@ -163,24 +165,68 @@ class ThetaNumerical:
         return "theta" + str(self.label) + " has a value of " + str(self.thetaValue)
 
 
+# Class treats data sets as an object and calculated beta0 and beta1 based on entered x/y data
+# This class is capable of performing a simple linear regression
+class SimpleLinearAnalytical:
+
+    ################################################## Mathematical Operations
+
+    # Finds the average of a list of numbers
+    def average(numbers):
+        return sum(numbers)/len(numbers)
+    
+    # Determines beta1 using x and y data
+    def calcBetaOne(self):
+        sumNum = 0
+        sumDen = 0
+        for i in range(len(self.xData)):
+            sumNum += ((self.xData[i] - self.xMean)*(self.yData[i] - self.yMean))
+
+        for i in range(len(self.xData)):
+            sumDen += ((self.xData[i] - self.xMean) ** 2)
+
+        return sumNum/sumDen
+    
+    ################################################## Class Methods
+    
+    # Each value for the simple linear regression is calculated upon initialization
+    def __init__(self, xData, yData):
+        
+        if len(xData) != len(yData):
+            raise Exception("X and Y data must have an equal number of data points")
+        
+        if type(xData) is not list or type(yData) is not list:
+            raise TypeError("Data must be entered in list format")
+        
+        self.xData = xData
+        self.yData = yData
+        
+        self.xMean = SimpleLinearAnalytical.average(xData)
+        self.yMean = SimpleLinearAnalytical.average(yData)
+
+        self.betaOne = self.calcBetaOne()
+        self.betaZero = self.yMean - (self.betaOne * self.xMean)
+
+    def __str__(self):
+        return "Beta1 and Beta0 were determined resulting in the following equation: y = " + str(self.betaZero) + " + " + str(self.betaOne) + "x"
+
 
 
 
 # MAIN
-# Numerical 
 xData = [1, 2, 3, 4, 5, 6, 7]
 yData = [1.5, 3.6, 6.7, 9.0, 11.2, 13.6, 16.0]
 
+
+# Numerical solution
 ThetaNumerical.changeDataPoints([xData], yData)
-
-thetaList = []
 thetaList = ThetaNumerical.initializeThetaNumerical()
-
-for x in thetaList:
-    print(x)
-
 newThetaNumericalList = ThetaNumerical.gradientDescent(thetaList)
-
 for x in newThetaNumericalList:
     print(x)
 
+
+# Analytical
+simpleLinRegSolution = SimpleLinearAnalytical(xData, yData)
+
+print(simpleLinRegSolution)
