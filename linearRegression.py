@@ -109,6 +109,25 @@ class ThetaNumerical:
         
         return thetaList
 
+    # Takes a list of theta and calculates corresponding theoretical value with input data
+    def runFunction(thetaList):
+        
+        # Ensures that the the number of thetas is supported by the dataset
+        if len(thetaList) != len(ThetaNumerical.inputDataPoints) + 1:
+            raise Exception("Theta list is not of sufficient length. Please ensure the the number of theta entries is the same as the dimensionality of the input data")
+        
+        # Isolate theta0 and remove it from the main list
+        thetaZero = thetaList[0]
+        thetaList.pop(0)
+
+        # Calculation for a given point
+        for dataPoint in range(len(ThetaNumerical.inputDataPoints[0])):
+            theoreticalValue = thetaZero.getValue()
+            for dimension in range(len(ThetaNumerical.inputDataPoints)):
+                theoreticalValue += ThetaNumerical.inputDataPoints[dimension][dataPoint] * (thetaList[dimension]).getValue()
+            
+            print("at data point " + str(dataPoint) + " the theoretical value is " + str(theoreticalValue))
+
     # Takes the partial derivative of entered theta value (any except for theta0)
     def thetaStandardDerivative(inputThetaNumerical, thetaList):
         totalSum = 0
@@ -187,6 +206,10 @@ class SimpleLinearAnalytical:
 
         return sumNum/sumDen
     
+    def runFunction(self, xValues):
+        for x in xValues:
+            print(self.betaZero + (self.betaOne * x))
+
     ################################################## Class Methods
     
     # Each value for the simple linear regression is calculated upon initialization
@@ -214,9 +237,13 @@ class SimpleLinearAnalytical:
 
 
 # MAIN
-xData = [1, 2, 3, 4, 5, 6, 7]
-yData = [1.5, 3.6, 6.7, 9.0, 11.2, 13.6, 16.0]
 
+# Test data
+# xData = [1, 2, 3, 4, 5, 6, 7]
+# yData = [1.5, 3.6, 6.7, 9.0, 11.2, 13.6, 16.0]
+
+xData = [ -1.91912641, -1.715855767, -1.651482801, -0.466233925, -0.305380803, -0.249651155, 0.115579679, 0.179532732, 0.195254016, 0.272178244, 0.411053504, 0.583576452, 0.860757465, 1.112627004, 1.166900152, 1.330479382, 1.480048593, 1.567092003, 1.702386553, 1.854651042]
+yData = [-3.091213284, -3.534290666, -3.146431752, -1.359515719, -1.887256513, -0.172493012, 0.663377457, -0.012017046, 1.525385343, -0.182826349, 0.844986267, 1.07356098, 2.487904538, 2.959933393, 2.411274018, 2.850040024, 2.516204312, 2.143785772, 3.230817032, 3.787476569]
 
 # Numerical solution
 ThetaNumerical.changeDataPoints([xData], yData)
@@ -225,8 +252,11 @@ newThetaNumericalList = ThetaNumerical.gradientDescent(thetaList)
 for x in newThetaNumericalList:
     print(x)
 
+ThetaNumerical.runFunction(newThetaNumericalList)
 
-# Analytical
+# Analytical solution
 simpleLinRegSolution = SimpleLinearAnalytical(xData, yData)
 
 print(simpleLinRegSolution)
+
+#simpleLinRegSolution.runFunction(xData)
