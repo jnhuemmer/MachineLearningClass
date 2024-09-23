@@ -1,5 +1,6 @@
 import os
 import random
+import math
 
 print("Hello world!")
 
@@ -78,16 +79,19 @@ class ThetaNumerical:
             tempCalc -= ThetaNumerical.outputDataPoints[i] # subtract yi
             tempCalc *= tempCalc # square
             totalSum += tempCalc
+        
         return totalSum/(2 * len(ThetaNumerical.outputDataPoints))
 
     # This is the main method for the mathematics section, as it calls the other ones
     # This method performs a gradient descent using an input list of initialized theta values and the input/outputdatapoints
     def gradientDescent(thetaList):
+        repeats = 0
         continueCalc = True
         oldJ = None
         
         # Loops until deltaJ specification
         while continueCalc:
+            repeats += 1
             derivativeList = []
             
             # Take the partial derivative of each theta value
@@ -96,16 +100,9 @@ class ThetaNumerical:
                     derivativeList.append(ThetaNumerical.thetaZeroDerivative(thetaList))
                 else:
                     derivativeList.append(ThetaNumerical.thetaStandardDerivative(theta, thetaList))
-            
-            for x in thetaList:
-                print(str(x) + "Before")
 
             # Apply alpha and partial derivative to current theta
             thetaList = ThetaNumerical.updateThetaNumerical(thetaList, derivativeList)
-            
-
-            for x in thetaList:
-                print(str(x) + "After")
 
             # Calculate and check j
             j = ThetaNumerical.calcJ(thetaList)
@@ -149,7 +146,7 @@ class ThetaNumerical:
                     tempCalc += theta.getValue()
                 else:
                     tempCalc += theta.getValue() * ThetaNumerical.inputDataPoints[theta.getLabel() - 1][i]
-            
+
             tempCalc -= ThetaNumerical.outputDataPoints[i] # Subtract yi
             tempCalc *= ThetaNumerical.inputDataPoints[inputThetaNumerical.getLabel() - 1][i] # Multiply by xi before summation
             totalSum += tempCalc
@@ -170,7 +167,7 @@ class ThetaNumerical:
                     totalSum += theta.getValue()
                 else:
                     totalSum += theta.getValue() * ThetaNumerical.inputDataPoints[theta.getLabel() - 1][i]
-            
+
             totalSum -= ThetaNumerical.outputDataPoints[i] # subtract yi
         
         return totalSum/len(ThetaNumerical.outputDataPoints)
@@ -179,7 +176,7 @@ class ThetaNumerical:
     # This is done following derivative calculation as to not mess up the derivative calculations for sequential theta values
     def updateThetaNumerical(thetaList, derivativeList):
         for i in range(len(thetaList)):
-            thetaList[i].changeValue(thetaList[i].getValue() - ThetaNumerical.alpha * derivativeList[i])
+            thetaList[i].changeValue(thetaList[i].getValue() - (ThetaNumerical.alpha * derivativeList[i]))
         return thetaList
 
     ################################################## Class Methods
@@ -244,7 +241,54 @@ class SimpleLinearAnalytical:
 
 
 
+
 # MAIN
+
+def average(numbers):
+    return (sum(numbers)/len(numbers))
+
+# Set list of numbers between -1 and 1
+def fixRange(numbers):
+    tempList = []
+    for x in numbers:
+        tempList.append((2 * ((x - min(numbers))/(max(numbers)-min(numbers)))) - 1)
+    return tempList
+
+def max(numbers):
+    temp = numbers [0]
+    for x in numbers:
+        if x > temp:
+            temp = x
+    return temp
+
+def min(numbers):
+    temp = numbers [0]
+    for x in numbers:
+        if x < temp:
+            temp = x
+    return temp
+
+def standardDeviation(numbers):
+        totalSum = 0
+        
+        # Loop through summation
+        for x in numbers:
+            totalSum += (x - average(numbers)) ** 2
+        
+
+        totalSum = math.sqrt(totalSum/(len(numbers) - 1))
+        return totalSum
+
+def zScore(numbers):
+    tempData = []
+    for x in numbers:
+        tempData.append((x - average(numbers))/standardDeviation(numbers))
+    return tempData
+
+
+
+
+# MAIN METHOD
 
 # Test data
 # xData = [1, 2, 3, 4, 5, 6, 7]
@@ -252,6 +296,13 @@ class SimpleLinearAnalytical:
 
 xData = [ -1.91912641, -1.715855767, -1.651482801, -0.466233925, -0.305380803, -0.249651155, 0.115579679, 0.179532732, 0.195254016, 0.272178244, 0.411053504, 0.583576452, 0.860757465, 1.112627004, 1.166900152, 1.330479382, 1.480048593, 1.567092003, 1.702386553, 1.854651042]
 yData = [-3.091213284, -3.534290666, -3.146431752, -1.359515719, -1.887256513, -0.172493012, 0.663377457, -0.012017046, 1.525385343, -0.182826349, 0.844986267, 1.07356098, 2.487904538, 2.959933393, 2.411274018, 2.850040024, 2.516204312, 2.143785772, 3.230817032, 3.787476569]
+
+xData = fixRange(xData)
+print(xData)
+
+#xData = zScore(xData)
+#print(xData)
+
 
 # Numerical solution
 ThetaNumerical.changeDataPoints([xData], yData)
