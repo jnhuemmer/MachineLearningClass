@@ -97,9 +97,16 @@ class ThetaNumerical:
                 else:
                     derivativeList.append(ThetaNumerical.thetaStandardDerivative(theta, thetaList))
             
+            for x in thetaList:
+                print(str(x) + "Before")
+
             # Apply alpha and partial derivative to current theta
-            ThetaNumerical.updateThetaNumerical(thetaList, derivativeList)
+            thetaList = ThetaNumerical.updateThetaNumerical(thetaList, derivativeList)
             
+
+            for x in thetaList:
+                print(str(x) + "After")
+
             # Calculate and check j
             j = ThetaNumerical.calcJ(thetaList)
             if oldJ != None and abs(j - oldJ) < ThetaNumerical.deltaJ:
@@ -173,6 +180,7 @@ class ThetaNumerical:
     def updateThetaNumerical(thetaList, derivativeList):
         for i in range(len(thetaList)):
             thetaList[i].changeValue(thetaList[i].getValue() - ThetaNumerical.alpha * derivativeList[i])
+        return thetaList
 
     ################################################## Class Methods
 
