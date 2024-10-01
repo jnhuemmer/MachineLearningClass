@@ -1,4 +1,3 @@
-import os
 import random
 import math
 
@@ -39,7 +38,6 @@ class ThetaNumerical:
         ThetaNumerical.deltaJ = float(newDeltaJ)
 
     ################################################## Object manipulation
-
     # Changes value of theta
     def changeValue(self, newValue):
         self.thetaValue = newValue
@@ -60,7 +58,6 @@ class ThetaNumerical:
         return tempList
 
     ################################################## Mathematical Operations
-
     # Calculates a J value based on theta values and input/output data
     def calcJ(thetaList):
         totalSum = 0
@@ -85,13 +82,11 @@ class ThetaNumerical:
     # This is the main method for the mathematics section, as it calls the other ones
     # This method performs a gradient descent using an input list of initialized theta values and the input/outputdatapoints
     def gradientDescent(thetaList):
-        repeats = 0
         continueCalc = True
         oldJ = None
         
         # Loops until deltaJ specification
         while continueCalc:
-            repeats += 1
             derivativeList = []
             
             # Take the partial derivative of each theta value
@@ -170,7 +165,7 @@ class ThetaNumerical:
 
             totalSum -= ThetaNumerical.outputDataPoints[i] # subtract yi
         
-        return totalSum/len(ThetaNumerical.outputDataPoints)
+        return (totalSum)/len(ThetaNumerical.outputDataPoints)
 
     # This method is most relevant with gradient descent, updating the list of theta objects with new calculated values
     # This is done following derivative calculation as to not mess up the derivative calculations for sequential theta values
@@ -180,7 +175,6 @@ class ThetaNumerical:
         return thetaList
 
     ################################################## Class Methods
-
     def __init__(self, theta, label):
         self.thetaValue = float(theta)
         self.label = label
@@ -203,14 +197,18 @@ class SimpleLinearAnalytical:
     def calcBetaOne(self):
         sumNum = 0
         sumDen = 0
+        
+        # Summation(xi - xAverage)(yi - yAverage)
         for i in range(len(self.xData)):
             sumNum += ((self.xData[i] - self.xMean)*(self.yData[i] - self.yMean))
 
+        # Summation(xi - xAverage)^2
         for i in range(len(self.xData)):
             sumDen += ((self.xData[i] - self.xMean) ** 2)
 
         return sumNum/sumDen
     
+    # Uses calculated y-intercept and slope to determine y-values 
     def runFunction(self, xValues):
         for x in xValues:
             print(self.betaZero + (self.betaOne * x))
@@ -268,6 +266,30 @@ def min(numbers):
             temp = x
     return temp
 
+# For reading in CSV tables
+def parseCSV(filePath):
+    listOfLists = []
+    with open(filePath, "r") as fileContent:
+        
+        # Read line by line
+        for line in fileContent:
+            line = line.strip()
+            splitLine = line.split(",")
+            
+            # Breaks line into entries
+            for value in range(len(splitLine)):
+                
+                # If block breaks columns into lists and places those lists into one big list
+                if len(listOfLists) != len(splitLine):
+                    if splitLine[value] != "":
+                        listOfLists.append([splitLine[value]])
+                    else:
+                        listOfLists.append(["Unlabeled"])
+                else:
+                    listOfLists[value].append(float(splitLine[value]))
+    
+    return listOfLists
+
 def standardDeviation(numbers):
         totalSum = 0
         
@@ -275,7 +297,6 @@ def standardDeviation(numbers):
         for x in numbers:
             totalSum += (x - average(numbers)) ** 2
         
-
         totalSum = math.sqrt(totalSum/(len(numbers) - 1))
         return totalSum
 
@@ -293,15 +314,18 @@ def zScore(numbers):
 # Test data
 # xData = [1, 2, 3, 4, 5, 6, 7]
 # yData = [1.5, 3.6, 6.7, 9.0, 11.2, 13.6, 16.0]
+# xData = [ -1.91912641, -1.715855767, -1.651482801, -0.466233925, -0.305380803, -0.249651155, 0.115579679, 0.179532732, 0.195254016, 0.272178244, 0.411053504, 0.583576452, 0.860757465, 1.112627004, 1.166900152, 1.330479382, 1.480048593, 1.567092003, 1.702386553, 1.854651042]
+# yData = [-3.091213284, -3.534290666, -3.146431752, -1.359515719, -1.887256513, -0.172493012, 0.663377457, -0.012017046, 1.525385343, -0.182826349, 0.844986267, 1.07356098, 2.487904538, 2.959933393, 2.411274018, 2.850040024, 2.516204312, 2.143785772, 3.230817032, 3.787476569]
 
-xData = [ -1.91912641, -1.715855767, -1.651482801, -0.466233925, -0.305380803, -0.249651155, 0.115579679, 0.179532732, 0.195254016, 0.272178244, 0.411053504, 0.583576452, 0.860757465, 1.112627004, 1.166900152, 1.330479382, 1.480048593, 1.567092003, 1.702386553, 1.854651042]
-yData = [-3.091213284, -3.534290666, -3.146431752, -1.359515719, -1.887256513, -0.172493012, 0.663377457, -0.012017046, 1.525385343, -0.182826349, 0.844986267, 1.07356098, 2.487904538, 2.959933393, 2.411274018, 2.850040024, 2.516204312, 2.143785772, 3.230817032, 3.787476569]
+# Pretreatment
+filePath = "C:\\Users\\Jacob\\Desktop\\Wormhole\\Fall2024\\MachineLearning\\HW1\\linear_regression_test_data.csv"
+allData = parseCSV(filePath)
+
+xData = allData[1][1:] # First entry is removed because it is the data category/header
+yData = allData[2][1:] # First entry is removed because it is the data category/header
 
 xData = fixRange(xData)
-print(xData)
-
-#xData = zScore(xData)
-#print(xData)
+xData = zScore(xData)
 
 
 # Numerical solution
@@ -311,11 +335,14 @@ newThetaNumericalList = ThetaNumerical.gradientDescent(thetaList)
 for x in newThetaNumericalList:
     print(x)
 
+print("Theoretical Y values from calculated theta0 and theta1 (numerical):")
 ThetaNumerical.runFunction(newThetaNumericalList)
+
 
 # Analytical solution
 simpleLinRegSolution = SimpleLinearAnalytical(xData, yData)
 
-print(simpleLinRegSolution)
+print("Theoretical Y values from calculated theta0 and theta1 (abstract):")
+simpleLinRegSolution.runFunction(xData)
 
-#simpleLinRegSolution.runFunction(xData)
+print(simpleLinRegSolution)
