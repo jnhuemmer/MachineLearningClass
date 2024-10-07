@@ -10,8 +10,8 @@ class ThetaNumerical:
     ################################################## Static Vars and Methods
     inputDataPoints = [[1, 2, 3, 4, 5, 6, 7]]
     outputDataPoints = [2, 4, 6, 8, 10, 12, 14]
-    alpha = 0.001
-    deltaJ = 0.00001
+    alpha = 0.01
+    deltaJ = 0.01
 
     # Changes alpha
     def changeAlpha(newAlpha):
@@ -111,6 +111,8 @@ class ThetaNumerical:
     # Takes a list of theta and calculates corresponding theoretical value with input data
     def runFunction(thetaList):
         
+        predictedValues = []
+
         # Ensures that the the number of thetas is supported by the dataset
         if len(thetaList) != len(ThetaNumerical.inputDataPoints) + 1:
             raise Exception("Theta list is not of sufficient length. Please ensure the the number of theta entries is the same as the dimensionality of the input data")
@@ -126,6 +128,9 @@ class ThetaNumerical:
                 theoreticalValue += ThetaNumerical.inputDataPoints[dimension][dataPoint] * (thetaList[dimension]).getValue()
             
             print("at data point " + str(dataPoint) + " the theoretical value is " + str(theoreticalValue))
+            predictedValues.append(theoreticalValue)
+        
+        return predictedValues
 
     # Takes the partial derivative of entered theta value (any except for theta0)
     def thetaStandardDerivative(inputThetaNumerical, thetaList):
@@ -183,64 +188,6 @@ class ThetaNumerical:
         return "theta" + str(self.label) + " has a value of " + str(self.thetaValue)
 
 
-# Class treats data sets as an object and calculated beta0 and beta1 based on entered x/y data
-# This class is capable of performing a simple linear regression
-class SimpleLinearAnalytical:
-
-    ################################################## Mathematical Operations
-
-    # Finds the average of a list of numbers
-    def average(numbers):
-        return sum(numbers)/len(numbers)
-    
-    # Determines beta1 using x and y data
-    def calcBetaOne(self):
-        sumNum = 0
-        sumDen = 0
-        
-        # Summation(xi - xAverage)(yi - yAverage)
-        for i in range(len(self.xData)):
-            sumNum += ((self.xData[i] - self.xMean)*(self.yData[i] - self.yMean))
-
-        # Summation(xi - xAverage)^2
-        for i in range(len(self.xData)):
-            sumDen += ((self.xData[i] - self.xMean) ** 2)
-
-        return sumNum/sumDen
-    
-    # Uses calculated y-intercept and slope to determine y-values 
-    def runFunction(self, xValues):
-        for x in xValues:
-            print(self.betaZero + (self.betaOne * x))
-
-    ################################################## Class Methods
-    
-    # Each value for the simple linear regression is calculated upon initialization
-    def __init__(self, xData, yData):
-        
-        if len(xData) != len(yData):
-            raise Exception("X and Y data must have an equal number of data points")
-        
-        if type(xData) is not list or type(yData) is not list:
-            raise TypeError("Data must be entered in list format")
-        
-        self.xData = xData
-        self.yData = yData
-        
-        self.xMean = SimpleLinearAnalytical.average(xData)
-        self.yMean = SimpleLinearAnalytical.average(yData)
-
-        self.betaOne = self.calcBetaOne()
-        self.betaZero = self.yMean - (self.betaOne * self.xMean)
-
-    def __str__(self):
-        return "Beta1 and Beta0 were determined resulting in the following equation: y = " + str(self.betaZero) + " + " + str(self.betaOne) + "x"
-
-
-
-
-
-# MAIN
 def average(numbers):
     return (sum(numbers)/len(numbers))
 
@@ -289,6 +236,20 @@ def parseCSV(filePath):
     
     return listOfLists
 
+def rSquared(predictionList, actualList):
+    if len(predictionList) != len(actualList):
+            raise Exception("Prediction list and actual data list must be of the same length.")
+
+    sumNum = 0
+    sumDen = 0
+    mean = average(actualList)
+    
+    for i in range(len(actualList)):
+        sumNum += (actualList[i] - predictionList[i]) ** 2
+        sumDen += (actualList[i] - mean) ** 2
+    
+    return (1 - (sumNum/sumDen))
+
 def standardDeviation(numbers):
         totalSum = 0
         
@@ -305,48 +266,38 @@ def zScore(numbers):
         tempData.append((x - average(numbers))/standardDeviation(numbers))
     return tempData
 
+
 # MAIN METHOD
 
-# Test data
-# xData = [1, 2, 3, 4, 5, 6, 7]
-# yData = [1.5, 3.6, 6.7, 9.0, 11.2, 13.6, 16.0]
-# xData = [ -1.91912641, -1.715855767, -1.651482801, -0.466233925, -0.305380803, -0.249651155, 0.115579679, 0.179532732, 0.195254016, 0.272178244, 0.411053504, 0.583576452, 0.860757465, 1.112627004, 1.166900152, 1.330479382, 1.480048593, 1.567092003, 1.702386553, 1.854651042]
-# yData = [-3.091213284, -3.534290666, -3.146431752, -1.359515719, -1.887256513, -0.172493012, 0.663377457, -0.012017046, 1.525385343, -0.182826349, 0.844986267, 1.07356098, 2.487904538, 2.959933393, 2.411274018, 2.850040024, 2.516204312, 2.143785772, 3.230817032, 3.787476569]
-
-# Pretreatment
+# Read in CSV
 filePath = "C:\\Users\\Jacob\\Desktop\\Wormhole\\Fall2024\\MachineLearning\\HW2\\diabetes_dataset.csv"
 allData = parseCSV(filePath)
 
-print(allData)
+# Parse data and pretreat (from -1 to 1)
+age = fixRange(allData[0][1:])
+sex = fixRange(allData[1][1:])
+bmi = fixRange(allData[2][1:])
+bp = fixRange(allData[3][1:])
+s1 = fixRange(allData[4][1:])
+s2 = fixRange(allData[5][1:])
+s3 = fixRange(allData[6][1:])
+s4 = fixRange(allData[7][1:])
+s5 = fixRange(allData[8][1:])
+s6 = fixRange(allData[9][1:])
+target = allData[10][1:]
 
-#xData = allData[1][1:] # First entry is removed because it is the data category/header
-#yData = allData[2][1:] # First entry is removed because it is the data category/header
-
-#xData = fixRange(xData)
-#xData = zScore(xData)
-
-
-
-
-
-"""
-# Numerical solution
-ThetaNumerical.changeDataPoints([xData], yData)
+# Perform MLR (alpha = 0.01, deltaJ = 0.01)
+ThetaNumerical.changeDataPoints([age, sex, bmi, bp, s1, s2, s3, s4, s5, s6], target)
 thetaList = ThetaNumerical.initializeThetaNumerical()
-newThetaNumericalList = ThetaNumerical.gradientDescent(thetaList)
-for x in newThetaNumericalList:
+newThetaList = ThetaNumerical.gradientDescent(thetaList)
+
+# Print thetas
+for x in newThetaList:
     print(x)
 
-print("Theoretical Y values from calculated theta0 and theta1 (numerical):")
-ThetaNumerical.runFunction(newThetaNumericalList)
+# Calculate and print prediction values
+predictedValues = ThetaNumerical.runFunction(newThetaList)
 
-
-# Analytical solution
-simpleLinRegSolution = SimpleLinearAnalytical(xData, yData)
-
-print("Theoretical Y values from calculated theta0 and theta1 (abstract):")
-simpleLinRegSolution.runFunction(xData)
-
-print(simpleLinRegSolution)
-
-"""
+# Calculate and print r^2
+determination = rSquared(predictedValues, target)
+print("The data has an r^2 value of: " + str(determination))
